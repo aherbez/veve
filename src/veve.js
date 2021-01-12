@@ -1,14 +1,11 @@
 const fs = require('fs')
 const path = require('path')
-const { ipcRenderer, remote } = require('electron');
+const { ipcRenderer, remote, app } = require('electron');
 const { dialog } = require('electron').remote;
-const { readTitles } = require(path.resolve('actions/uiActions'));
-const { NEW_DOCUMENT_NEEDED,
-    WRITE_NEW_FILE_NEEDED,
-    NEW_FILE_WRITTEN,
+const { NEW_DOCUMENT,
     SAVED,
     SAVE_NEEDED,
-    SAVEFILE
+    OPENFILE
 } = require(path.resolve('actions/types.js'));
 
 let canvas, previewCtx = null;
@@ -18,6 +15,7 @@ let offscreenCanvas, ctx = null;
 
 let editor = null;
 let filePath = null;
+let prevContent = '';
 
 let durationInSeconds = 5;
 let currentTime = 0;
@@ -30,6 +28,8 @@ let duration = 5;
 let loop = true;
 let fps = 30;
 
+let contentDirty = false;
+
 let stage = {
     width: 1200,
     height: 675
@@ -37,88 +37,93 @@ let stage = {
 
 let userRenderFunctionStr = '';
 
-
-function readFileContentOnClick(dir, el) {
-    el.addEventListener('click', (e) => {
-        console.log("reading file");
-        fs.readFile(dir, "utf8", (err, data) => {
-            if (err) throw err;
-            fileDir = dir;
-            editor.session.setValue(data);
-            updateRenderFunction();
-        })
-    })
+function updateTitleText() {
+    let newTitle = (filePath) ? filePath : "Veve 0.0.1"
+    if (contentDirty) {
+        newTitle += "*";
+    }
+    document.title = newTitle;
 }
 
-function handleNewFile(form, dir, content) {
-    let fileName = form.target[0].value;
-    form.target.classList.remove('show');
-    
-    let elChild = document.createElement('li');
-    elChild.innerText = fileName;
-    readFileContentOnClick(dir, elChild);
-    form.target[0].value = '';
-    form.target.parentNode.insertBefore(elChild, form.target.nextSibling);
-
-    editor.session.setValue(content);   
-}
-
-ipcRenderer.on(NEW_DOCUMENT_NEEDED, (event, data) => {
-
-    let form = document.getElementById('form');
-    form.classList.toggle('show');
-    document.getElementById('title_input').focus();
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        let fileName = e.target[0].value;
-        // write file here
-        ipcRenderer.send(WRITE_NEW_FILE_NEEDED, {
-            dir: `./data/${fileName}.js`
-        })
-
-        ipcRenderer.on(NEW_FILE_WRITTEN, function(event, message) {
-            let path = `./data/${fileName}.js`;
-            
-            handleNewFile(e, path, message);
-            setCurrentFile(path);
-        })
-    })
-
+ipcRenderer.on(OPENFILE, (event, fileLocation) => {
+    openFileFromPath(fileLocation);
 })
 
-ipcRenderer.on(SAVED, (event, data) => {
-    
-    /*
-    el = document.createElement("p");
-    text = document.createTextNode(data);
-    el.appendChild(text);
-    el.setAttribute("id", "flash");
-    document.querySelector('body').prepend(el);
-    setTimeout(function() {
-        document.querySelector('body').removeChild(el);
-    }, 10000);
-    */
+function openFileFromPath(fileLocation) {
+    fs.readFile(fileLocation, "utf8", (err, data) => {
+        if (err) throw err;
+        filePath = fileLocation;
+        updateRecentFile(fileLocation);
 
-    // TODO: also sloppy, refactor
-    // document.title = document.title.slice(0, -1);
-    
+        editor.session.setValue(data);
+        prevContent = data.trim();
+        
+        resetTime();
+
+        updateRenderFunction();
+        updateTitleText();
+    });
+}
+
+ipcRenderer.on(NEW_DOCUMENT, (event, data) => {
+
+    contentDirty = true;
+    filePath = null;
+    prevContent = '';
+    editor.session.setValue('');
+    resetTime();
+
     updateRenderFunction();
+    updateTitleText();
+})
+
+ipcRenderer.on(SAVED, (event, savedFilePath) => {
+    prevContent = editor.session.getValue().trim();
+    contentDirty = false;
+    filePath = savedFilePath;
     
+    updateRecentFile();
+    updateRenderFunction();
+    updateTitleText();
 });
 
 let updateRenderFunction = function() {
     userRenderFunctionStr = editor.session.getValue();
 }
 
+function updateRecentFile() {
+    let userPath = remote.app.getPath('userData');
+    let fullPath = path.join(userPath, 'settings.json');
+
+    let settings = {
+        lastFile: filePath
+    }
+
+    let data = JSON.stringify(settings);
+    fs.writeFileSync(fullPath, data);
+    console.log(`saved settings: ${data}`);
+}
+
+function maybeLoadLastFile() {
+    // try loading the most recently-saved file
+    let userPath = remote.app.getPath('userData');
+    let fullPath = path.join(userPath, 'settings.json');
+
+    fs.readFile(fullPath, (err, data) => {
+        let settings = JSON.parse(data);
+
+        let lastFile = settings.lastFile;
+        if (lastFile) {
+            openFileFromPath(lastFile);
+        }
+
+    })
+}
+
 function initCodeEditor() {
     editor = ace.edit("code");
     editor.setTheme("ace/theme/monokai");
     editor.session.setMode("ace/mode/javascript");
-}
-
-function setCurrentFile(path) {
-    filePath = path;
 }
 
 function initCanvas() {
@@ -132,12 +137,13 @@ function initCanvas() {
     offscreenCanvas.style.left = `-${stage.width * 2}px`;
     
     ctx = offscreenCanvas.getContext('2d');
-
 }
 
 function init() {
     initCodeEditor();
     initCanvas();
+
+    maybeLoadLastFile();
 
     encoder = new Whammy.Video(30);
 
@@ -145,28 +151,13 @@ function init() {
 
     update();
 
-    readTitles('./data').map(({title, dir}) => {
-        el = document.createElement('li');
-        text = document.createTextNode(`${title.split('.js')[0]}`);
-        el.appendChild(text);
-        el.addEventListener('click', (e) => {
-            fs.readFile(dir, "utf8", (err, data) => {
-                if (err) throw err;
-                setCurrentFile(dir);
-                editor.session.setValue(data);
-                updateRenderFunction();
-            })
-        })
-
-        document.getElementById('files').appendChild(el);
-    })
-
     document.getElementById('code').onkeyup = (e) => {
-        if (!document.title.endsWith("*")) {
-            document.title += "*";
+        
+        if (editor.getValue().trim() != prevContent) {
+            contentDirty = true;
+            updateTitleText();    
         }
 
-        console.log('sending SAVE_NEEDED', filePath);
         ipcRenderer.send(SAVE_NEEDED, {
             content: editor.getValue(),
             filePath: filePath
@@ -212,8 +203,6 @@ function exportFrame() {
 }
 
 async function exportSequence() {
-    // create save file dialog
-    // ipcRenderer.send(SAVEFILE);
     let filePath = dialog.showSaveDialogSync({
         title: "Save Image Sequence",
         createDirectory: true
@@ -223,8 +212,6 @@ async function exportSequence() {
     let dir = path.dirname(filePath);
     let basename = path.basename(filePath);
     basename = basename.split('.')[0];
-
-    console.log(filePath, dir, basename);
 
     // calc num frames
     let totalFrames = duration * fps;
@@ -249,11 +236,6 @@ async function exportSequence() {
         timeSeconds += 1 / fps;
         time = timeSeconds / duration;
     }
-}
-
-// when we get a file location from main
-function onSaveSelection() {
-
 }
 
 function setDuration() {
@@ -366,7 +348,6 @@ function copyCanvas() {
 function render(dt) {
     ctx.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
 
-    // drawBackground(ctx, stage.width, stage.height);
     ctx.save();
     ctx.translate(offscreenCanvas.width/2, offscreenCanvas.height/2);
 
@@ -381,7 +362,6 @@ function render(dt) {
     }
 
     ctx.restore();
-
 }
 
 init();

@@ -1,7 +1,13 @@
 const { app, Menu, ipcMain, dialog } = require('electron');
 const fs = require('fs');
 const path = require('path')
-const { NEW_DOCUMENT_NEEDED, SAVE_NEEDED, SAVED, SAVEFILE } = require(path.resolve('actions/types'))
+const { 
+    NEW_DOCUMENT,
+    SAVE_NEEDED,
+    SAVED,
+    SAVEFILE,
+    OPENFILE
+} = require(path.resolve('actions/types'))
 
 let contentToSave = null;
 
@@ -13,14 +19,7 @@ ipcMain.on(SAVEFILE, (evvent, content) => {
     
 });
 
-module.exports = function(win) {
-    return Menu.buildFromTemplate([
-        {
-            label: app.getName(),
-            submenu: [
-                { label: `Hello`, click: () => console.log("hello world")}
-            ]
-        },
+/*
         {
             label: 'Edit',
             submenu: [
@@ -32,14 +31,50 @@ module.exports = function(win) {
 
             ]
         },
+*/
+
+module.exports = function(win) {
+    return Menu.buildFromTemplate([
         {
-            label: 'Custom Menu',
+            label: app.getName(),
+            submenu: [
+                { 
+                    label: 'About',
+                    click: () => {
+                        console.log("hello world")
+                    }
+                }
+            ]
+        },
+        {
+            label: 'File',
             submenu: [
                 { 
                     label: 'New',
                     accelerator: 'cmd+N',
                     click: () => {
-                        win.webContents.send(NEW_DOCUMENT_NEEDED, 'Create new document');
+                        win.webContents.send(NEW_DOCUMENT, 'Create new document');
+                    }
+                },
+                {
+                    label: 'Open',
+                    accelerator: 'cmd+O',
+                    click: () => {
+
+                        let selectedFiles = dialog.showOpenDialogSync({
+                            title: "Choose file to open",
+                            filters: [{
+                                name: "Javascript",
+                                extensions: ['js']
+                            }]
+                        });
+
+                        let fileToOpen = selectedFiles && selectedFiles[0];
+
+                        if (fileToOpen) {
+                            console.log(`openging: ${fileToOpen}`);
+                            win.webContents.send(OPENFILE, fileToOpen);
+                        }                        
                     }
                 },
                 {
@@ -47,22 +82,63 @@ module.exports = function(win) {
                     accelerator: 'cmd+S',
                     click: () => {
                         if (contentToSave != null) {
-                            
-                            fs.writeFile(contentToSave.filePath, contentToSave.content, (err) => {
-                                if (err) throw err;
-                                console.log('saved');
-                                win.webContents.send(SAVED, 'File Saved');
-                            });
 
-                            win.webContents.send(SAVED, 'save file');                            
+                            if (!contentToSave.filePath) {
+                                let selectedFile = dialog.showSaveDialogSync({
+                                    title: "Save File",
+                                    filters: [{
+                                        name: "Javascript",
+                                        extensions: ['js']
+                                    }]
+                                });
+                                
+                                if (selectedFile) {
+                                    contentToSave.filePath = selectedFile;
+                                }
+                            }
+
+                            if (contentToSave.filePath) {
+                                fs.writeFile(contentToSave.filePath, contentToSave.content, (err) => {
+                                    if (err) throw err;
+                                    console.log('saved');
+                                    win.webContents.send(SAVED, contentToSave.filePath);
+                                });    
+                            }
+
                         }
                     }
                 },
+            ]
+        },
+        {
+            label: 'Export',
+            submenu: [
                 {
-                    label: 'Save Sequence',
+                    label: 'Video',
                     click: () => {
-                        
+                        console.log('exporting video');
                     }
+                },
+                {
+                    label: 'GIF',
+                    click: () => {
+                        console.log('exporting GIF');
+                    }
+                },
+                {
+                    label: 'Image Sequence',
+                    click: () => {
+                        console.log('exporting image sequence');
+                    }
+                }
+            ]
+        },
+        {
+            label: 'Help',
+            submenu: [
+                {
+                    label: 'TODO',
+                    click: () => {}
                 }
             ]
         }
