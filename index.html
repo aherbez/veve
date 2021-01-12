@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Veve 0.0.1</title>
+        <meta http-equiv="Content-Security-Policy" contents="script-src 'self' 'unsafe-inline';" />
+        
+        <link rel="stylesheet" href="css/style.css" />
+    </head>
+
+    <body style="background: white;">
+        <div class="container">
+            <div id="col-editor">
+
+                <ul id="files">
+                    <li class="form_wrapper">
+                        <form id="form" action="">
+                            <input type="text" id="title_input" placeholder="Post Title">
+                        </form>
+                    </li>
+                </ul>
+
+                <div id="code" contenteditable="true"></div>
+                <div id="controls"> 
+                    <div class="settings-el">
+                        Width:
+                        <input type="text" id="set-dim-width" />
+                        Height:
+                        <input type="text" id="set-dim-height" />
+                        
+                    </div>
+                    <div class="settings-el">
+                        <span class="settings-label">Duration:</span> 
+                        <input type="text" id="settings-duration" value="5">
+                        <button onClick="setDuration();">Set</button>
+                    </div>
+                    <div class="settings-el">
+                        <button onClick="exportVideo()">Export Video</button>
+                        <button onClick="exportSequence()">Export Img Sequence</button>
+                        <button onClick="exportFrame()">Save Frame</button>
+                        <a id="downloadLink" target="blank" download="test.webm">download video</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div id="col-stage">
+            <canvas width="608" height="342" id="stage"></canvas>
+
+            <div id="playback-controls">
+                <button onClick="gotoStart();">|&lt;</button>
+                <!-- <button onClick="prevKey();">&lt;</button> -->
+                <button id="btn-play" onClick="togglePlayback();">&gt;</button>
+                <!-- <button onClick="nextKey();">&gt;|</button> -->
+                <button id="btn-loop" onClick="toggleLooping();">Loop</button>
+            </div>
+        </div>
+
+        <script src="src/libs/ace/ace.js"></script>
+
+        <script src="src/libs/whammy.js"></script>
+        <script src="src/render.js"></script>
+    </body>
+</html>

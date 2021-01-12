@@ -1,0 +1,108 @@
+@media screen {
+    *, *:after, *:before {
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+  }
+  
+* {
+    margin: auto;
+    padding: auto;
+}
+
+html {
+    font-size: 62.5%;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background: var(--background);
+    color: var(--text-color);
+}
+
+/*base sizee*/
+body {
+    height: 100%;
+    font-size: 1.4rem;
+}
+
+#col-editor {
+    background: var(--sidebar-color);
+    color: var(--sidebar-text);
+    border-right: 1px solid var(--border-color);
+    height: 100%;
+    width: 40%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+#controls {
+    padding: 5px;
+}
+
+#col-stage {
+    width: 60%;
+    height: 100%;
+    position: fixed;
+    left: 40%;
+    top: 0;
+    background-color: #334441;
+}
+
+#stage {
+    margin: 10px;
+}
+
+#files .highlight {
+    background: #334441;
+    color: #50C68A;
+}
+
+#editor {
+    width: 400px;
+    height: 200px;
+    border: 1px solid #000;
+}
+
+#files li:not(.form_wrapper) {
+    margin: 15px 3px;
+    display: inline-block;
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+    padding: 0;
+    padding-bottom: 20px;
+}
+
+#files li form {
+    margin-top: -44px;
+    -webkit-transition: all .30s ease-in-out;
+    transition: all .30s ease-in-out;
+}
+
+#files li form.show {
+    margin-top: 0;
+}
+
+#files li input {
+    padding: 15px 5px;
+    border: none;
+    width: 100%;
+    border-bottom: 1px solid var(--border-color);
+    color: #000;
+}
+    
+
+#code {
+    white-space: pre-wrap;
+    font-family: 'Courier New', Courier, monospace;
+    height: 60%;
+    right: 0;
+    border: none;
+    padding: 10px 10px;
+    font-size: 1.5rem;
+    line-height: 2.5rem;
+    border: 1px solid #000;
+    overflow-y: scroll;
+}
+
