@@ -19,19 +19,35 @@ ipcMain.on(SAVEFILE, (evvent, content) => {
     
 });
 
-/*
-        {
-            label: 'Edit',
-            submenu: [
-                { label: "Undo", role: 'undo' }
-                , { label: "Redo", role: 'redo' }
-                , { label: "Cut", role: 'cut' }
-                , { label: "Copy", role: 'copy' }
-                , { label: "Paste", role: 'paste' }
+function saveContent(win, forceDialog) {
+    if (contentToSave != null) {
 
-            ]
-        },
-*/
+        if (forceDialog || !contentToSave.filePath) {
+            let selectedFile = dialog.showSaveDialogSync({
+                title: "Save File",
+                filters: [{
+                    name: "Javascript",
+                    extensions: ['js']
+                }]
+            });
+            
+            if (selectedFile) {
+                contentToSave.filePath = selectedFile;
+            }
+        }
+
+        if (contentToSave.filePath) {
+            fs.writeFile(contentToSave.filePath, contentToSave.content, (err) => {
+                if (err) throw err;
+                console.log('saved');
+                win.webContents.send(SAVED, contentToSave.filePath);
+            });    
+        }
+
+    }
+}
+
+
 
 module.exports = function(win) {
     return Menu.buildFromTemplate([
@@ -72,7 +88,6 @@ module.exports = function(win) {
                         let fileToOpen = selectedFiles && selectedFiles[0];
 
                         if (fileToOpen) {
-                            console.log(`openging: ${fileToOpen}`);
                             win.webContents.send(OPENFILE, fileToOpen);
                         }                        
                     }
@@ -81,33 +96,17 @@ module.exports = function(win) {
                     label: 'Save',
                     accelerator: 'cmd+S',
                     click: () => {
-                        if (contentToSave != null) {
-
-                            if (!contentToSave.filePath) {
-                                let selectedFile = dialog.showSaveDialogSync({
-                                    title: "Save File",
-                                    filters: [{
-                                        name: "Javascript",
-                                        extensions: ['js']
-                                    }]
-                                });
-                                
-                                if (selectedFile) {
-                                    contentToSave.filePath = selectedFile;
-                                }
-                            }
-
-                            if (contentToSave.filePath) {
-                                fs.writeFile(contentToSave.filePath, contentToSave.content, (err) => {
-                                    if (err) throw err;
-                                    console.log('saved');
-                                    win.webContents.send(SAVED, contentToSave.filePath);
-                                });    
-                            }
-
-                        }
+                        saveContent(win, false);
                     }
                 },
+                {
+                    label: 'Save as...',
+                    accelerator: 'cmd+shift+S',
+                    click: () => {
+                        console.log("Save as...");
+                        saveContent(win, true);
+                    }
+                }
             ]
         },
         {

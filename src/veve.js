@@ -62,6 +62,11 @@ function openFileFromPath(fileLocation) {
 
         updateRenderFunction();
         updateTitleText();
+
+        ipcRenderer.send(SAVE_NEEDED, {
+            content: editor.getValue(),
+            filePath: filePath
+        })
     });
 }
 
