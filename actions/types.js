@@ -5,3 +5,4 @@ exports.SAVE_NEEDED = "SAVE_NEEDED";
 exports.SAVED = "SAVED";
 exports.SAVEFILE = "SAVEFILE";
 exports.OPENFILE = "OPENFILE";
+exports.REQUEST_SAVE = "REQUEST_SAVE";

@@ -9,7 +9,7 @@ const { NEW_DOCUMENT_NEEDED,
     SAVE_NEEDED
 } = require('./actions/types');
 
-// require('electron-reload')(__dirname);
+require('electron-reload')(__dirname);
 
 function createWindow() {
     const win = new BrowserWindow({

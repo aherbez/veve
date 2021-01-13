@@ -5,7 +5,8 @@ const { dialog } = require('electron').remote;
 const { NEW_DOCUMENT,
     SAVED,
     SAVE_NEEDED,
-    OPENFILE
+    OPENFILE,
+    REQUEST_SAVE
 } = require(path.resolve('actions/types.js'));
 
 let canvas, previewCtx = null;
@@ -17,19 +18,20 @@ let editor = null;
 let filePath = null;
 let prevContent = '';
 
-let durationInSeconds = 5;
+
 let currentTime = 0;
 let lastTime;
 let u = 0;
 let time = 0;
 let timeSeconds = 0;
 let playing = false;
-let duration = 5;
+
 let loop = true;
 let fps = 30;
 
 let contentDirty = false;
 
+let duration = 5;
 let stage = {
     width: 1200,
     height: 675
@@ -55,11 +57,16 @@ function openFileFromPath(fileLocation) {
         filePath = fileLocation;
         updateRecentFile(fileLocation);
 
-        editor.session.setValue(data);
-        prevContent = data.trim();
+        let parsedData = JSON.parse(data);
+        let code = parsedData.code || "";
+        duration = parsedData.duration || 5;
+        stage.width = parsedData.stageWidth || 1200;
+        stage.height = parsedData.stageHeight || 675;
+
+        editor.session.setValue(code);
+        prevContent = code.trim();
         
         resetTime();
-
         updateRenderFunction();
         updateTitleText();
 
@@ -82,15 +89,30 @@ ipcRenderer.on(NEW_DOCUMENT, (event, data) => {
     updateTitleText();
 })
 
-ipcRenderer.on(SAVED, (event, savedFilePath) => {
+ipcRenderer.on(REQUEST_SAVE, (event, targetPath) => {
+    let code = editor.session.getValue();
+    let saveData = {
+        code: code,
+        duration: duration,
+        stageWidth: stage.width,
+        stageHeight: stage.height
+    }
+     
+    fs.writeFile(targetPath, JSON.stringify(saveData, null, 4), (err) => {
+        if (err) throw err;
+        filePath = targetPath;
+        onSave();
+    });
+})
+
+function onSave() {
     prevContent = editor.session.getValue().trim();
     contentDirty = false;
-    filePath = savedFilePath;
     
     updateRecentFile();
     updateRenderFunction();
     updateTitleText();
-});
+}
 
 let updateRenderFunction = function() {
     userRenderFunctionStr = editor.session.getValue();
@@ -106,11 +128,10 @@ function updateRecentFile() {
 
     let data = JSON.stringify(settings);
     fs.writeFileSync(fullPath, data);
-    console.log(`saved settings: ${data}`);
 }
 
+// try loading the most recently-saved file
 function maybeLoadLastFile() {
-    // try loading the most recently-saved file
     let userPath = remote.app.getPath('userData');
     let fullPath = path.join(userPath, 'settings.json');
 
@@ -121,7 +142,6 @@ function maybeLoadLastFile() {
         if (lastFile) {
             openFileFromPath(lastFile);
         }
-
     })
 }
 

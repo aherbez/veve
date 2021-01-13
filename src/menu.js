@@ -6,7 +6,8 @@ const {
     SAVE_NEEDED,
     SAVED,
     SAVEFILE,
-    OPENFILE
+    OPENFILE,
+    REQUEST_SAVE
 } = require(path.resolve('actions/types'))
 
 let contentToSave = null;
@@ -21,13 +22,12 @@ ipcMain.on(SAVEFILE, (evvent, content) => {
 
 function saveContent(win, forceDialog) {
     if (contentToSave != null) {
-
         if (forceDialog || !contentToSave.filePath) {
             let selectedFile = dialog.showSaveDialogSync({
                 title: "Save File",
                 filters: [{
-                    name: "Javascript",
-                    extensions: ['js']
+                    name: "Loas",
+                    extensions: ['loa']
                 }]
             });
             
@@ -37,17 +37,11 @@ function saveContent(win, forceDialog) {
         }
 
         if (contentToSave.filePath) {
-            fs.writeFile(contentToSave.filePath, contentToSave.content, (err) => {
-                if (err) throw err;
-                console.log('saved');
-                win.webContents.send(SAVED, contentToSave.filePath);
-            });    
+            win.webContents.send(REQUEST_SAVE, contentToSave.filePath);    
         }
 
     }
 }
-
-
 
 module.exports = function(win) {
     return Menu.buildFromTemplate([
@@ -67,21 +61,21 @@ module.exports = function(win) {
             submenu: [
                 { 
                     label: 'New',
-                    accelerator: 'cmd+N',
+                    accelerator: 'CmdOrCtrl+N',
                     click: () => {
                         win.webContents.send(NEW_DOCUMENT, 'Create new document');
                     }
                 },
                 {
                     label: 'Open',
-                    accelerator: 'cmd+O',
+                    accelerator: 'CmdOrCtrl+O',
                     click: () => {
 
                         let selectedFiles = dialog.showOpenDialogSync({
                             title: "Choose file to open",
                             filters: [{
-                                name: "Javascript",
-                                extensions: ['js']
+                                name: "Loas",
+                                extensions: ['loa']
                             }]
                         });
 
@@ -94,19 +88,31 @@ module.exports = function(win) {
                 },
                 {
                     label: 'Save',
-                    accelerator: 'cmd+S',
+                    accelerator: 'CmdOrCtrl+S',
                     click: () => {
                         saveContent(win, false);
                     }
                 },
                 {
                     label: 'Save as...',
-                    accelerator: 'cmd+shift+S',
+                    accelerator: 'CmdOrCtrl+shift+S',
                     click: () => {
                         console.log("Save as...");
                         saveContent(win, true);
                     }
                 }
+            ]
+        },
+        {
+            label: 'Edit',
+            submenu: [
+                { label: "Undo", accelerator: "CmdOrCtrl+Z", selector: "undo:" },
+                { label: "Redo", accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:" },
+                { type: "separator" },
+                { label: "Cut", accelerator: "CmdOrCtrl+X", selector: "cut:" },
+                { label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" },
+                { label: "Paste", accelerator: "CmdOrCtrl+V", selector: "paste:" },
+                { label: "Select All", accelerator: "CmdOrCtrl+A", selector: "selectAll:" }                
             ]
         },
         {
