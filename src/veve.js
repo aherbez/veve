@@ -63,6 +63,8 @@ function openFileFromPath(fileLocation) {
         stage.width = parsedData.stageWidth || 1200;
         stage.height = parsedData.stageHeight || 675;
 
+        initUI();
+
         editor.session.setValue(code);
         prevContent = code.trim();
         
@@ -156,12 +158,9 @@ function initCanvas() {
     previewCtx = canvas.getContext('2d');
 
     offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = stage.width;
-    offscreenCanvas.height = stage.height;
-    offscreenCanvas.style.position = 'absolute';
-    offscreenCanvas.style.left = `-${stage.width * 2}px`;
-    
     ctx = offscreenCanvas.getContext('2d');
+
+    offscreenCanvas.style.position = 'absolute';    
 }
 
 function init() {
@@ -175,6 +174,7 @@ function init() {
     lastTime = Date.now();
 
     update();
+    initUI();
 
     document.getElementById('code').onkeyup = (e) => {
         
@@ -268,6 +268,39 @@ function setDuration() {
     resetTime();
 }
 
+function setDimensions() {
+    let newWidth = parseFloat(document.getElementById('set-dim-width').value);
+    let newHeight = parseFloat(document.getElementById('set-dim-height').value);
+
+    if (isNaN(newWidth) || isNaN(newHeight)) {
+        console.error('bad input');
+        initUI();
+        return;
+    }
+
+    stage.width = newWidth;
+    stage.height = newHeight;
+
+    resetCanvasSize();
+}
+
+function resetCanvasSize() {
+    offscreenCanvas.width = stage.width;
+    offscreenCanvas.height = stage.height;
+    offscreenCanvas.style.left = `-${stage.width * 2}px`;
+
+    let aspectRatio = stage.width / stage.height;
+
+    let scaleX = 608/stage.width;
+    let scaleY = 342/stage.height;
+    let scale = Math.min(scaleX, scaleY);
+
+    canvas.width = stage.width * scale;
+    canvas.height = stage.height * scale;
+    canvas.style.marginLeft = `-${canvas.width/2}`;
+
+}
+
 function gotoStart() {
     resetTime();
     setPlaying(false);
@@ -279,17 +312,36 @@ function nextKey() {}
 
 function setPlaying(play) {
     playing = play;
-    document.getElementById("btn-play").innerHTML = (playing ? "||" : "&gt;")
+    
+    let playBtn = document.getElementById("btn-play-icon");
+    let newClass = playing ? "fa-pause" : "fa-play";
+    
+    playBtn.classList.remove("fa-play");
+    playBtn.classList.remove("fa-pause");
+    playBtn.classList.add(newClass);
+
 }
 
 function togglePlayback() {
     setPlaying(!playing);
 }
 
+function initUI() {
+    document.getElementById('set-dim-width').value = stage.width;
+    document.getElementById('set-dim-height').value = stage.height;
+    document.getElementById('settings-duration').value = duration;
+}
+
 function toggleLooping() {
     loop = !loop;
 
-    document.getElementById("btn-loop").innerHTML = (loop) ? "Looping" : "No Loop";
+    let loopBtn = document.getElementById("btn-loop-icon"); // .innerHTML = (loop) ? "Looping" : "No Loop";
+    let newClass = loop ? "fa-loop" : "fa-stop-circle";
+
+    loopBtn.classList.remove("fa-loop");
+    loopBtn.classList.remove("fa-stop-circle");
+    loopBtn.classList.add(newClass);
+
 }
 
 function finalizeVideoExample(){

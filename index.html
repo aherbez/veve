@@ -4,28 +4,53 @@
         <meta charset="UTF-8">
         <title>Veve 0.0.1</title>
         <meta http-equiv="Content-Security-Policy" contents="script-src 'self' 'unsafe-inline';" />
-        
         <link rel="stylesheet" href="css/style.css" />
     </head>
 
     <body style="background: rgb(97, 97, 97);">
         <div class="container">
             <div id="col-editor">
-
                 <div id="code" contenteditable="true"></div>
+            </div>
+
+            <div id="col-stage">
+                <div id="container-canvas">
+                    <canvas width="608" height="342" id="stage"></canvas>
+                </div>
+
+                <div id="playback-controls">
+                    <button onClick="gotoStart();">
+                        <i class="fas fa-step-backward icon" ></i>
+                    </button>
+                    <!-- <button onClick="prevKey();">&lt;</button> -->
+                    <button id="btn-play" onClick="togglePlayback();">
+                        <i id="btn-play-icon" class="fas fa-play icon" ></i>
+                    </button>
+                    <!-- <button onClick="nextKey();">&gt;|</button> -->
+                    <button id="btn-loop" onClick="toggleLooping();">
+                        <i id="btn-loop-icon" class="fas fa-redo icon" ></i>
+                    </button>
+                </div>
+
                 <div id="controls"> 
                     <div class="settings-el">
-                        Width:
-                        <input type="text" id="set-dim-width" />
-                        Height:
-                        <input type="text" id="set-dim-height" />
-                        
+                        <div class="">
+                            <label for="set-dim-width">Width</label>
+                            <input type="text" id="set-dim-width" class="input-numerical" />
+                        </div>
+                        <div class="">
+                            <label for="set-dim-height">Height</label>
+                            <input type="text" id="set-dim-height" class="input-numerical" />
+                        </div>
+                        <button onClick="setDimensions()">Set Dimensions</button>
                     </div>
+
                     <div class="settings-el">
-                        <span class="settings-label">Duration:</span> 
-                        <input type="text" id="settings-duration" value="5">
+                        <label for="settings-duration">Duration:</label> 
+                        <input type="text" id="settings-duration" value="5" class="input-numerical" />
                         <button onClick="setDuration();">Set</button>
                     </div>
+
                     <div class="settings-el">
                         <button onClick="exportVideo()">Export Video</button>
                         <button onClick="exportSequence()">Export Img Sequence</button>
@@ -34,24 +59,12 @@
                     </div>
                 </div>
             </div>
-
         </div>
-        
-        <div id="col-stage">
-            <canvas width="608" height="342" id="stage"></canvas>
-
-            <div id="playback-controls">
-                <button onClick="gotoStart();">|&lt;</button>
-                <!-- <button onClick="prevKey();">&lt;</button> -->
-                <button id="btn-play" onClick="togglePlayback();">&gt;</button>
-                <!-- <button onClick="nextKey();">&gt;|</button> -->
-                <button id="btn-loop" onClick="toggleLooping();">Loop</button>
-            </div>
-        </div>
-
         <script src="src/libs/ace/ace.js"></script>
 
         <script src="src/libs/whammy.js"></script>
         <script src="src/veve.js"></script>
+
+        <script src="src/libs/fa.js"></script>
     </body>
 </html>

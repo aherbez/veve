@@ -10,6 +10,15 @@
     padding: auto;
 }
 
+canvas {
+    background-color: #FFF;
+    border: 1px solid #000;
+}
+
+hr {
+    width: 100%;
+}
+
 html {
     font-size: 62.5%;
     height: 100%;
@@ -34,8 +43,6 @@ body {
     position: fixed;
     left: 0;
     top: 0;
-    overflow-y: hidden;
-    overflow-x: hidden;
 }
 
 #controls {
@@ -43,15 +50,22 @@ body {
 }
 
 #col-stage {
-    width: 40%;
+    width: 50%;
     height: 100%;
     position: fixed;
     left: 50%;
     top: 0;
 }
 
+#container-canvas {
+    height: 370px;
+    border-bottom: 1px solid #F00;
+}
+
 #stage {
-    margin: 10px;
+    position: absolute;
+    left: 50%;
+    margin-left: -304px;
 }
 
 #editor {
@@ -63,12 +77,35 @@ body {
 #code {
     white-space: pre-wrap;
     font-family: 'Courier New', Courier, monospace;
-    height: 70%;
+    height: 100%;
     right: 0;
     border: none;
     padding: 10px 10px;
     font-size: 1.5rem;
     line-height: 2.5rem;
     border: 1px solid #000;
+}
+
+button {
+    padding: 5px;
+}
+
+.icon {
+    font-size:36px;
+    color:rgb(0, 0, 0);
+}
+
+#playback-controls {
+    width: 160px;
+    display: flex;
+    flex-direction: row;
+}
+
+.input-numerical {
+    width: 50px;
+}
+
+label {
+    color: #FFF;
 }
 
