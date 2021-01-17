@@ -64,6 +64,7 @@ function openFileFromPath(fileLocation) {
         stage.height = parsedData.stageHeight || 675;
 
         initUI();
+        resetCanvasSize();
 
         editor.session.setValue(code);
         prevContent = code.trim();
@@ -297,7 +298,7 @@ function resetCanvasSize() {
 
     canvas.width = stage.width * scale;
     canvas.height = stage.height * scale;
-    canvas.style.marginLeft = `-${canvas.width/2}`;
+    canvas.style.marginLeft = `-${canvas.width/2}px`;
 
 }
 
@@ -439,6 +440,27 @@ function render(dt) {
     }
 
     ctx.restore();
+}
+
+// UI FUNCTIONS ------------------------------------
+
+function toggleSection(sectionId) {
+    let settingsMain = document.getElementById(`ctrl-cont-${sectionId}`);
+    let settingsIcon = document.getElementById(`ctrl-head-icon-${sectionId}`);
+
+    console.log(settingsMain.style.display);
+    let isShowing = settingsMain.style.display != 'none';
+
+    if (isShowing) {
+        settingsMain.style.display = 'none';
+        settingsIcon.classList.remove('fa-chevron-down');
+        settingsIcon.classList.add('fa-chevron-right');
+    } else {
+        settingsMain.style.display = 'block';
+        settingsIcon.classList.remove('fa-chevron-right');
+        settingsIcon.classList.add('fa-chevron-down');
+    }
+
 }
 
 init();
