@@ -32,7 +32,7 @@
 
                 <div class="controls-container">
                     <div class="controls-heading" id="ctrl-head-set" onClick="toggleSection('set')">
-                        <i class="fas fa-chevron-right" id="ctrl-head-icon-set" ></i>
+                        <i class="fas fa-chevron-down" id="ctrl-head-icon-set" ></i>
                         Settings
                     </div>
                     <div class="controls-contents" id="ctrl-cont-set">
@@ -52,12 +52,18 @@
                             <input type="text" id="settings-duration" value="5" class="input-numerical" />
                             <button onClick="setDuration();">Set</button>
                         </div>
+                    
+                        <div class="settings-el">
+                            <label for="settings-fps">FPS:</label> 
+                            <input type="text" id="settings-fps" value="30" class="input-numerical" />
+                            <button onClick="setFPS();">Set</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="controls-container">
                     <div class="controls-heading" id="ctrl-head-export" onClick="toggleSection('export')">
-                        <i class="fas fa-chevron-right" id="ctrl-head-icon-export" ></i>
+                        <i class="fas fa-chevron-down" id="ctrl-head-icon-export" ></i>
                         Export
                     </div>
                     <div class="controls-contents" id="ctrl-cont-export">
