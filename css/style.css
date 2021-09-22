@@ -107,6 +107,9 @@ button {
 
 label {
     color: #FFF;
+    display: inline-block;
+    width: 150px;
+    border-bottom: 1px solid rgb(165, 165, 165);
 }
 
 .controls-container {
@@ -127,5 +130,11 @@ label {
 .controls-contents {
     margin-top: 10px;
     margin-left: 20px;
+}
+
+.output-div {
+    margin-top: 20px;
+    width: 100%;
+    bottom: 0px;
 }
 

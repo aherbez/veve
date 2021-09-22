@@ -83,7 +83,7 @@ module.exports = function(win) {
 
                         if (fileToOpen) {
                             win.webContents.send(OPENFILE, fileToOpen);
-                        }                        
+                        }
                     }
                 },
                 {

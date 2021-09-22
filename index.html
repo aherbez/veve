@@ -38,25 +38,22 @@
                     <div class="controls-contents" id="ctrl-cont-set">
                         <div class="">
                             <label for="set-dim-width">Width</label>
-                            <input type="text" id="set-dim-width" class="input-numerical" />
+                            <input type="text" id="set-dim-width" onchange="setDimensions()" class="input-numerical" />
                         </div>
                         
                         <div class="">
                             <label for="set-dim-height">Height</label>
-                            <input type="text" id="set-dim-height" class="input-numerical" />
-                            <button onClick="setDimensions()">Set Dimensions</button>
+                            <input type="text" id="set-dim-height" onchange="setDimensions()" class="input-numerical" />
                         </div>
 
                         <div class="settings-el">
-                            <label for="settings-duration">Duration:</label> 
-                            <input type="text" id="settings-duration" value="5" class="input-numerical" />
-                            <button onClick="setDuration();">Set</button>
+                            <label for="settings-duration">Duration (seconds)</label> 
+                            <input type="text" id="settings-duration" value="5" onchange="setDuration()" class="input-numerical" />
                         </div>
                     
                         <div class="settings-el">
-                            <label for="settings-fps">FPS:</label> 
-                            <input type="text" id="settings-fps" value="30" class="input-numerical" />
-                            <button onClick="setFPS();">Set</button>
+                            <label for="settings-fps">FPS</label> 
+                            <input type="text" id="settings-fps" value="30" onchange="setFPS()" class="input-numerical" />
                         </div>
                     </div>
                 </div>
@@ -70,8 +67,13 @@
                         <!-- <button onClick="exportVideo()">Export Video</button> -->
                         <button onClick="exportSequence()">Export Img Sequence</button>
                         <button onClick="exportFrame()">Save Frame</button>
+                        <button onClick="exportGIF()">Save GIF</button>
                         <!-- <a id="downloadLink" target="blank" download="test.webm">download video</a> -->
                     </div>
+                </div>
+
+                <div>
+                    <input type="text" id="settings-output" value="" class="output-div" />
                 </div>
             </div>
         </div>

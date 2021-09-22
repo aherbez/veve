@@ -8,6 +8,7 @@ const { NEW_DOCUMENT,
     OPENFILE,
     REQUEST_SAVE
 } = require(path.resolve('actions/types.js'));
+const GIFEncoder = require('gif-encoder-2');
 
 let canvas, previewCtx = null;
 let encoder = null;
@@ -17,7 +18,6 @@ let offscreenCanvas, ctx = null;
 let editor = null;
 let filePath = null;
 let prevContent = '';
-
 
 let currentTime = 0;
 let lastTime;
@@ -212,6 +212,7 @@ function exportVideo() {
     playing = true;
 }
 
+
 function exportFrame() {
     let filePath = dialog.showSaveDialogSync({
         title: "Save Image Sequence",
@@ -226,6 +227,93 @@ function exportFrame() {
         if (err) throw err;
         console.log(`wrote frame ${filePath}`);
     });
+}
+
+function debugGif(filePath) {
+    const size = 200
+    const half = size / 2
+     
+    // const canvas = createCanvas(size, size)
+    // const ctx = canvas.getContext('2d')
+     
+    function drawBackground() {
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, size, size)
+    }
+     
+    const encoder = new GIFEncoder(size, size)
+    encoder.setDelay(500)
+    encoder.start()
+     
+    drawBackground()
+    ctx.fillStyle = '#ff0000'
+    ctx.fillRect(0, 0, half, half)
+    encoder.addFrame(ctx)
+     
+    drawBackground()
+    ctx.fillStyle = '#00ff00'
+    ctx.fillRect(half, 0, half, half)
+    encoder.addFrame(ctx)
+     
+    drawBackground()
+    ctx.fillStyle = '#0000ff'
+    ctx.fillRect(half, half, half, half)
+    encoder.addFrame(ctx)
+     
+    drawBackground()
+    ctx.fillStyle = '#ffff00'
+    ctx.fillRect(0, half, half, half)
+    encoder.addFrame(ctx)
+     
+    encoder.finish()
+     
+    const buffer = encoder.out.getData()
+     
+    fs.writeFile(filePath, buffer, error => {
+      // gif drawn or error
+      console.log(`error: ${error}`);
+    })
+}
+
+function exportGIF() {
+    let filePath = dialog.showSaveDialogSync({
+        title: "Save GIF",
+        createDirectory: true
+    });
+    if (!filePath) return;
+    document.getElementById('settings-output').value = 'Writing GIF...';
+    
+    let totalFrames = duration * fps;
+    resetTime();
+
+    const encoder = new GIFEncoder(stage.width, stage.height, 'octree', false, totalFrames);
+    encoder.setFrameRate(fps);
+    encoder.start();
+
+    encoder.on('progress', percent => {
+        console.log(`${percent}% done...`);
+        document.getElementById('settings-output').value = `Writing GIF: ${percent}% done`;
+    });
+
+    for (let i=0; i < (totalFrames + 1); i++) {
+        render();
+        encoder.addFrame(ctx);
+        copyCanvas();
+
+        timeSeconds += 1 / fps;
+        time = timeSeconds / duration;
+    }
+
+    encoder.finish();
+
+    const buffer = encoder.out.getData();
+
+    fs.writeFile(filePath, buffer, error  => {
+        if (!error) {
+            document.getElementById('settings-output').value = `DONE!`;
+        }
+    });
+
 }
 
 async function exportSequence() {
@@ -267,6 +355,11 @@ async function exportSequence() {
 function setDuration() {
     duration = parseFloat(document.getElementById("settings-duration").value);
     resetTime();
+}
+
+function setFPS() {
+    fps = parseInt(document.getElementById("settings-fps").value);
+    resetTime();    
 }
 
 function setDimensions() {

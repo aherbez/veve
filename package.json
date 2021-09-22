@@ -23,6 +23,7 @@
   "dependencies": {
     "electron-reload": "^1.5.0",
     "electron-squirrel-startup": "^1.0.0",
+    "gif-encoder-2": "^1.0.5",
     "monaco-editor": "^0.21.2"
   },
   "config": {

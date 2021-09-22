@@ -26,7 +26,7 @@ function createWindow() {
 
     Menu.setApplicationMenu(menu(win));
 
-    win.webContents.openDevTools();
+    // win.webContents.openDevTools();
 
     ipcMain.on(WRITE_NEW_FILE_NEEDED, (event, {dir}) => {
         fs.writeFile(dir, `Start edditing ${dir}`, (err) => {
