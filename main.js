@@ -22,7 +22,7 @@ function createWindow() {
     })
 
     win.loadFile('index.html');
-    win.setTitle('Veve 0.0.1');
+    win.setTitle('Veve 0.0.2');
 
     Menu.setApplicationMenu(menu(win));
 

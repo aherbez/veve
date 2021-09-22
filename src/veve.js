@@ -37,10 +37,13 @@ let stage = {
     height: 675
 }
 
+let renderBackground = false;
+let backgroundColor = null;
+
 let userRenderFunctionStr = '';
 
 function updateTitleText() {
-    let newTitle = (filePath) ? filePath : "Veve 0.0.1"
+    let newTitle = (filePath) ? filePath : "Veve 0.0.2"
     if (contentDirty) {
         newTitle += "*";
     }
@@ -62,6 +65,8 @@ function openFileFromPath(fileLocation) {
         duration = parsedData.duration || 5;
         stage.width = parsedData.stageWidth || 1200;
         stage.height = parsedData.stageHeight || 675;
+        renderBackground = parsedData.renderBack || false;
+        backgroundColor = parsedData.backgroundColor || null;
 
         initUI();
         resetCanvasSize();
@@ -98,7 +103,9 @@ ipcRenderer.on(REQUEST_SAVE, (event, targetPath) => {
         code: code,
         duration: duration,
         stageWidth: stage.width,
-        stageHeight: stage.height
+        stageHeight: stage.height,
+        backgroundColor: backgroundColor,
+        renderBack: renderBackground
     }
      
     fs.writeFile(targetPath, JSON.stringify(saveData, null, 4), (err) => {
@@ -288,6 +295,13 @@ function exportGIF() {
 
     const encoder = new GIFEncoder(stage.width, stage.height, 'octree', false, totalFrames);
     encoder.setFrameRate(fps);
+
+    if (loop) {
+        encoder.setRepeat(0);
+    } else {
+        encoder.setRepeat(1);
+    }
+
     encoder.start();
 
     encoder.on('progress', percent => {
@@ -362,6 +376,14 @@ function setFPS() {
     resetTime();    
 }
 
+function setBackgroundColor() {
+    backgroundColor = document.getElementById('settings-background-color').value;
+}
+
+function setUseBackground() {
+    renderBackground = document.getElementById('settings-use-background').checked;
+}
+
 function setDimensions() {
     let newWidth = parseFloat(document.getElementById('set-dim-width').value);
     let newHeight = parseFloat(document.getElementById('set-dim-height').value);
@@ -424,6 +446,8 @@ function initUI() {
     document.getElementById('set-dim-width').value = stage.width;
     document.getElementById('set-dim-height').value = stage.height;
     document.getElementById('settings-duration').value = duration;
+    document.getElementById('settings-background-color').value = backgroundColor;
+    document.getElementById('settings-use-background').checked = renderBackground;
 }
 
 function toggleLooping() {
@@ -518,6 +542,14 @@ function copyCanvas() {
 
 function render(dt) {
     ctx.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+
+    if (renderBackground && backgroundColor !== null) {
+        ctx.save();
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+        ctx.restore();
+    }
+
 
     ctx.save();
     ctx.translate(offscreenCanvas.width/2, offscreenCanvas.height/2);
